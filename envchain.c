@@ -46,7 +46,7 @@ const char *envchain_name;
 SecKeychainRef envchain_keychain = NULL;
 
 typedef void (*envchain_search_callback)(char* key, char* value, void *context);
-typedef void (*envchain_namespace_search_callback)(char* name, void *context);
+typedef void (*envchain_namespace_search_callback)(char* name);
 typedef struct {
   envchain_search_callback search_callback;
   envchain_namespace_search_callback namespace_callback;
@@ -301,7 +301,7 @@ envchain_search_namespaces_uniqufier(char* name, void *raw_context)
 }
 
 int
-envchain_search_namespaces(envchain_namespace_search_callback callback, void *data)
+envchain_search_namespaces(envchain_namespace_search_callback callback)
 {
   OSStatus status;
   CFArrayRef items = NULL;
@@ -333,7 +333,7 @@ envchain_search_namespaces(envchain_namespace_search_callback callback, void *da
     goto fail;
   }
 
-  envchain_search_namespaces_context context = {callback, 0, names, data};
+  envchain_search_namespaces_context context = {callback, 0, names};
   envchain_search_values_applier_data applier_context = {NULL, envchain_search_namespaces_uniqufier, &context};
   CFArrayApplyFunction(
     items, CFRangeMake(0, CFArrayGetCount(items)),
@@ -683,7 +683,7 @@ envchain_list(int argc, const char **argv)
   else {
     if (context.show_value) envchain_abort_with_help();
 
-    envchain_search_namespaces(&envchain_list_namespace_callback, &context);
+    envchain_search_namespaces(&envchain_list_namespace_callback);
   }
   return 0;
 }
